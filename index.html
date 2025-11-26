@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relief Warehouse TH</title>
+    <link rel="icon" href="https://img2.pic.in.th/pic/warehouse_logo2.png" type="image/x-icon" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e88e5, #0d47a1);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            font-size: 32px;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-weight: 500;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .login-btn {
+            background-color: white;
+            color: #1e88e5;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .login-btn i {
+            margin-right: 8px;
+        }
+
+        .main-content {
+            display: flex;
+            margin-top: 30px;
+            gap: 30px;
+        }
+
+        .sidebar {
+            flex: 1;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .content {
+            flex: 3;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            background-color: #e3f2fd;
+            color: #1e88e5;
+            font-weight: 500;
+        }
+
+        .nav-item:hover:not(.active) {
+            background-color: #f5f5f5;
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stat-card.urgent {
+            border-left: 5px solid #f44336;
+        }
+
+        .stat-card.moderate {
+            border-left: 5px solid #ff9800;
+        }
+
+        .stat-card.sufficient {
+            border-left: 5px solid #4caf50;
+        }
+
+        .stat-card.normal {
+            border-left: 5px solid #a34caf;
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card.urgent .stat-icon {
+            color: #f44336;
+        }
+
+        .stat-card.moderate .stat-icon {
+            color: #ff9800;
+        }
+
+        .stat-card.sufficient .stat-icon {
+            color: #4caf50;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #757575;
+            font-size: 14px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .items-table th {
+            background-color: #f5f7fa;
+            font-weight: 500;
+        }
+
+        .items-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-urgent {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+
+        .status-moderate {
+            background-color: #fff3e0;
+            color: #ff9800;
+        }
+
+        .status-sufficient {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            color: #757575;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #1e88e5;
+        }
+
+        .add-item-form,
+        .donation-form,
+        .distribution-form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1e88e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1565c0;
+        }
+
+        .btn-success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #388e3c;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .public-view {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .public-title {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #1e88e5;
+        }
+
+        .public-subtitle {
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: #757575;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .public-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .public-stat {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .public-stat h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .public-stat ul {
+            list-style-type: none;
+            text-align: left;
+        }
+
+        .public-stat li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .public-stat li:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .item-status {
+            font-size: 14px;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #757575;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #757575;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .center-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .center-selector select {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            min-width: 300px;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            position: relative;
+            height: 300px;
+        }
+
+        .donation-table,
+        .distribution-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .donation-table th,
+        .donation-table td,
+        .distribution-table th,
+        .distribution-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .donation-table th,
+        .distribution-table th {
+            background-color: #f5f7fa;
+            font-weight: 500;
+        }
+
+        .center-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .center-info h3 {
+            margin-bottom: 10px;
+            color: #1e88e5;
+        }
+
+        .center-info p {
+            margin-bottom: 5px;
+        }
+
+        .search-box {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .search-box input {
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #1e88e5;
+            box-shadow: 0 2px 5px rgba(30, 136, 229, 0.3);
+        }
+
+        .centers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .center-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .center-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .center-card h3 {
+            color: #1e88e5;
+            margin-bottom: 10px;
+        }
+
+        .center-card p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .distribution-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .distribution-info h4 {
+            color: #9c27b0;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .distribution-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #757575;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                margin-top: 15px;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .centers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* ========== SIDEBAR STYLES ========== */
+        .sidebar {
+            flex: 1;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border-radius: 15px;
+            padding: 25px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(30, 136, 229, 0.1);
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .nav-item {
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            font-weight: 400;
+            color: #555;
+            border: 1px solid transparent;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 136, 229, 0.1), transparent);
+            transition: all 0.5s;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(30, 136, 229, 0.08);
+            transform: translateX(5px);
+            border-color: rgba(30, 136, 229, 0.2);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+            border: none;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+            transition: transform 0.3s;
+        }
+
+        .nav-item:hover i {
+            transform: scale(1.1);
+        }
+
+        .nav-item.active i {
+            color: white;
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                padding: 10px 15px;
+            }
+
+            .logo {
+                margin-bottom: 10px;
+            }
+
+            .logo h1 {
+                font-size: 22px;
+            }
+
+            .logo i {
+                font-size: 30px;
+            }
+
+            .user-info {
+                margin-top: 10px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .user-info span {
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+
+            .login-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 20px;
+            }
+
+            .logo i {
+                font-size: 26px;
+                margin-right: 8px;
+            }
+
+            .user-info img {
+                width: 36px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <i class="fas fa-hands-helping"></i>
+                        <h1>Relief Warehouse TH <br>
+                            ระบบคลังศูนย์บริจาค</h1>
+                    </div>
+                    <div class="user-info">
+                        <div v-if="user">
+                            <img :src="user.photoURL" :alt="user.displayName">
+                            <span>{{ user.displayName }}</span>
+                            <button class="login-btn" @click="signOut">
+                                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                            </button>
+                        </div>
+                        <button v-else class="login-btn" @click="signIn">
+                            <i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google
+                        </button>
+                        <button v-else class="login-btn">
+                            <i class="fab fa-tel"></i> ติดต่อ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+            <div v-if="user" class="main-content" style="display: flex; gap: 30px;">
+                <div class="sidebar">
+                    <div class="nav-item" :class="{ active: currentView === 'dashboard' }"
+                        @click="changeView('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i> ภาพรวมคลัง
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'manage' }" @click="changeView('manage')">
+                        <i class="fas fa-boxes"></i> จัดการสินค้า
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'add' }" @click="changeView('add')">
+                        <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'donations' }"
+                        @click="changeView('donations')">
+                        <i class="fas fa-hand-holding-heart"></i> บันทึกการบริจาค
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'distributions' }"
+                        @click="changeView('distributions')">
+                        <i class="fas fa-people-carry"></i> การแจกจ่ายสินค้า
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'reports' }" @click="changeView('reports')">
+                        <i class="fas fa-chart-bar"></i> รายงานและสถิติ
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'center' }" @click="changeView('center')">
+                        <i class="fas fa-building"></i> จัดการศูนย์
+                    </div>
+                    <div class="nav-item" :class="{ active: currentView === 'public' }" @click="changeView('public')">
+                        <i class="fas fa-eye"></i> ดูแบบสาธารณะ
+                    </div>
+                </div>
+
+                <div class="content">
+                    <!-- ภาพรวมคลัง -->
+                    <div v-if="currentView === 'dashboard'">
+                        <h2 class="section-title">ภาพรวมคลังบริจาค</h2>
+
+                        <div class="center-info" v-if="currentCenter">
+                            <h3>{{ currentCenter.name }}</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> {{ currentCenter.address }}</p>
+                            <p><i class="fas fa-phone"></i> {{ currentCenter.phone }}</p>
+                            <p><i class="fas fa-info-circle"></i> {{ currentCenter.description }}</p>
+                        </div>
+
+                        <div class="stats-cards">
+                            <div class="stat-card urgent">
+                                <i class="fas fa-exclamation-circle stat-icon"></i>
+                                <div class="stat-value">{{ urgentItems.length }}</div>
+                                <div class="stat-label">สินค้าขาดแคลนเร่งด่วน</div>
+                            </div>
+                            <div class="stat-card moderate">
+                                <i class="fas fa-info-circle stat-icon"></i>
+                                <div class="stat-value">{{ moderateItems.length }}</div>
+                                <div class="stat-label">สินค้ามีปริมาณปานกลาง</div>
+                            </div>
+                            <div class="stat-card sufficient">
+                                <i class="fas fa-check-circle stat-icon"></i>
+                                <div class="stat-value">{{ sufficientItems.length }}</div>
+                                <div class="stat-label">สินค้ามีเพียงพอ</div>
+                            </div>
+                            <div class="stat-card normal">
+                                <i class="fas fa-people-carry stat-icon" style="color: #9c27b0;"></i>
+                                <div class="stat-value">{{ totalDistributions }}</div>
+                                <div class="stat-label">การแจกจ่ายทั้งหมด</div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">สินค้าขาดแคลนเร่งด่วน</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อสินค้า</th>
+                                    <th>จำนวนที่มี</th>
+                                    <th>จำนวนที่ต้องการ</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in urgentItems" :key="item.id">
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.currentStock }}</td>
+                                    <td>{{ item.targetStock }}</td>
+                                    <td><span class="status-badge status-urgent">ขาดแคลนเร่งด่วน</span></td>
+                                </tr>
+                                <tr v-if="urgentItems.length === 0">
+                                    <td colspan="4" style="text-align: center; padding: 20px;">
+                                        ไม่มีสินค้าที่ขาดแคลนเร่งด่วน
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- จัดการสินค้า -->
+                    <div v-if="currentView === 'manage'">
+                        <h2 class="section-title">จัดการสินค้าในคลัง</h2>
+
+                        <div class="success-message" v-if="message">
+                            <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อสินค้า</th>
+                                    <th>จำนวนที่มี</th>
+                                    <th>จำนวนที่ต้องการ</th>
+                                    <th>สถานะ</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in items" :key="item.id">
+                                    <td>{{ item.name }}</td>
+                                    <td>
+                                        <input type="number" v-model="item.currentStock" @change="updateItem(item)"
+                                            class="form-control" style="width: 80px;">
+                                    </td>
+                                    <td>
+                                        <input type="number" v-model="item.targetStock" @change="updateItem(item)"
+                                            class="form-control" style="width: 80px;">
+                                    </td>
+                                    <td>
+                                        <span class="status-badge" :class="getStatusClass(item)">{{ getStatusText(item)
+                                            }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn" @click="deleteItem(item.id)" title="ลบสินค้า">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr v-if="items.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                        ยังไม่มีสินค้าในคลัง <a href="#" @click="changeView('add')">เพิ่มสินค้าแรก</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- เพิ่มสินค้า -->
+                    <div v-if="currentView === 'add'">
+                        <h2 class="section-title">เพิ่มสินค้าใหม่</h2>
+
+                        <div class="success-message" v-if="message">
+                            <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+                        <div class="add-item-form">
+                            <div class="form-group">
+                                <label for="itemName">ชื่อสินค้า</label>
+                                <input type="text" id="itemName" v-model="newItem.name" class="form-control"
+                                    placeholder="เช่น ข้าวสาร, น้ำดื่ม, ยาสามัญ">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="currentStock">จำนวนที่มี</label>
+                                <input type="number" id="currentStock" v-model="newItem.currentStock"
+                                    class="form-control" placeholder="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="targetStock">จำนวนที่ต้องการ</label>
+                                <input type="number" id="targetStock" v-model="newItem.targetStock" class="form-control"
+                                    placeholder="0">
+                            </div>
+
+                            <button class="btn btn-primary" @click="addItem">
+                                <i class="fas fa-plus"></i> เพิ่มสินค้า
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- บันทึกการบริจาค -->
+                    <div v-if="currentView === 'donations'">
+                        <h2 class="section-title">บันทึกการบริจาค</h2>
+
+                        <div class="success-message" v-if="message">
+                            <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+                        <div class="donation-form">
+                            <h3>บันทึกการบริจาคใหม่</h3>
+                            <div class="form-group">
+                                <label for="donorName">ชื่อผู้บริจาค</label>
+                                <input type="text" id="donorName" v-model="newDonation.donorName" class="form-control"
+                                    placeholder="ชื่อ-นามสกุล">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donorPhone">เบอร์โทรศัพท์</label>
+                                <input type="text" id="donorPhone" v-model="newDonation.donorPhone" class="form-control"
+                                    placeholder="เบอร์โทรศัพท์">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationItem">สินค้าที่บริจาค</label>
+                                <select id="donationItem" v-model="newDonation.itemId" class="form-control">
+                                    <option value="">เลือกสินค้า</option>
+                                    <option v-for="item in items" :key="item.id" :value="item.id">{{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationQuantity">จำนวน</label>
+                                <input type="number" id="donationQuantity" v-model="newDonation.quantity"
+                                    class="form-control" placeholder="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationDate">วันที่บริจาค</label>
+                                <input type="date" id="donationDate" v-model="newDonation.date" class="form-control">
+                            </div>
+
+                            <button class="btn btn-primary" @click="addDonation">
+                                <i class="fas fa-save"></i> บันทึกการบริจาค
+                            </button>
+                        </div>
+
+                        <h3 class="section-title">ประวัติการบริจาค</h3>
+                        <table class="donation-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>ผู้บริจาค</th>
+                                    <th>เบอร์โทร</th>
+                                    <th>สินค้า</th>
+                                    <th>จำนวน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="donation in donations" :key="donation.id">
+                                    <td>{{ formatDate(donation.date) }}</td>
+                                    <td>{{ donation.donorName }}</td>
+                                    <td>{{ donation.donorPhone }}</td>
+                                    <td>{{ getItemName(donation.itemId) }}</td>
+                                    <td>{{ donation.quantity }}</td>
+                                </tr>
+                                <tr v-if="donations.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                        ยังไม่มีประวัติการบริจาค
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- การแจกจ่ายสินค้า -->
+                    <div v-if="currentView === 'distributions'">
+                        <h2 class="section-title">การแจกจ่ายสินค้า</h2>
+
+                        <div class="success-message" v-if="message">
+                            <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+                        <div class="distribution-form">
+                            <h3>บันทึกการแจกจ่ายสินค้า</h3>
+                            <div class="form-group">
+                                <label for="distributionItem">สินค้าที่แจกจ่าย</label>
+                                <select id="distributionItem" v-model="newDistribution.itemId" class="form-control"
+                                    @change="checkStock">
+                                    <option value="">เลือกสินค้า</option>
+                                    <option v-for="item in items" :key="item.id" :value="item.id">{{ item.name }}
+                                        (มีในสต็อก: {{ item.currentStock }})</option>
+                                </select>
+                                <small v-if="selectedItem && newDistribution.quantity > selectedItem.currentStock"
+                                    style="color: #f44336;">
+                                    จำนวนที่ต้องการแจกจ่ายมากกว่าสต็อกที่มี! สต็อกปัจจุบัน: {{ selectedItem.currentStock
+                                    }}
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="distributionQuantity">จำนวนที่แจกจ่าย</label>
+                                <input type="number" id="distributionQuantity" v-model="newDistribution.quantity"
+                                    class="form-control" placeholder="0" @input="checkStock">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="distributionDate">วันที่แจกจ่าย</label>
+                                <input type="date" id="distributionDate" v-model="newDistribution.date"
+                                    class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="distributionRecipient">ผู้รับผิดชอบการแจกจ่าย</label>
+                                <input type="text" id="distributionRecipient" v-model="newDistribution.recipient"
+                                    class="form-control" placeholder="ชื่อผู้รับผิดชอบ">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="distributionDetails">รายละเอียดเพิ่มเติม</label>
+                                <textarea id="distributionDetails" v-model="newDistribution.details"
+                                    class="form-control" rows="3"
+                                    placeholder="รายละเอียดการแจกจ่าย เช่น แจกจ่ายให้ผู้ประสบภัยในพื้นที่..."></textarea>
+                            </div>
+
+                            <button class="btn btn-primary" @click="addDistribution" :disabled="!canDistribute">
+                                <i class="fas fa-people-carry"></i> บันทึกการแจกจ่าย
+                            </button>
+                        </div>
+
+                        <h3 class="section-title">ประวัติการแจกจ่าย</h3>
+                        <table class="distribution-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>สินค้า</th>
+                                    <th>จำนวน</th>
+                                    <th>ผู้รับผิดชอบ</th>
+                                    <th>รายละเอียด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="distribution in distributions" :key="distribution.id">
+                                    <td>{{ formatDate(distribution.date) }}</td>
+                                    <td>{{ getItemName(distribution.itemId) }}</td>
+                                    <td>{{ distribution.quantity }}</td>
+                                    <td>{{ distribution.recipient }}</td>
+                                    <td>{{ distribution.details }}</td>
+                                </tr>
+                                <tr v-if="distributions.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                        ยังไม่มีประวัติการแจกจ่าย
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- รายงานและสถิติ -->
+                    <div v-if="currentView === 'reports'">
+                        <h2 class="section-title">รายงานและสถิติ</h2>
+
+                        <div class="stats-cards">
+                            <div class="stat-card">
+                                <i class="fas fa-boxes stat-icon" style="color: #1e88e5;"></i>
+                                <div class="stat-value">{{ totalDonations }}</div>
+                                <div class="stat-label">จำนวนการบริจาคทั้งหมด</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-hand-holding-heart stat-icon" style="color: #4caf50;"></i>
+                                <div class="stat-value">{{ totalDonatedItems }}</div>
+                                <div class="stat-label">สินค้าที่ได้รับบริจาค</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-people-carry stat-icon" style="color: #9c27b0;"></i>
+                                <div class="stat-value">{{ totalDistributedItems }}</div>
+                                <div class="stat-label">สินค้าที่แจกจ่ายไป</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-users stat-icon" style="color: #ff9800;"></i>
+                                <div class="stat-value">{{ uniqueDonors }}</div>
+                                <div class="stat-label">ผู้บริจาคทั้งหมด</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="donationsChart"></canvas>
+                        </div>
+
+                        <h3 class="section-title">ผู้บริจาคมากที่สุด</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>อันดับ</th>
+                                    <th>ชื่อผู้บริจาค</th>
+                                    <th>เบอร์โทร</th>
+                                    <th>จำนวนครั้งที่บริจาค</th>
+                                    <th>จำนวนสินค้าที่บริจาค</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(donor, index) in topDonors" :key="donor.donorPhone">
+                                    <td>{{ index + 1 }}</td>
+                                    <td>{{ donor.donorName }}</td>
+                                    <td>{{ donor.donorPhone }}</td>
+                                    <td>{{ donor.count }}</td>
+                                    <td>{{ donor.totalQuantity }}</td>
+                                </tr>
+                                <tr v-if="topDonors.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                        ยังไม่มีข้อมูลผู้บริจาค
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="section-title">สินค้าที่แจกจ่ายบ่อยที่สุด</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>อันดับ</th>
+                                    <th>ชื่อสินค้า</th>
+                                    <th>จำนวนครั้งที่แจกจ่าย</th>
+                                    <th>จำนวนที่แจกจ่ายทั้งหมด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in topDistributedItems" :key="item.itemId">
+                                    <td>{{ index + 1 }}</td>
+                                    <td>{{ getItemName(item.itemId) }}</td>
+                                    <td>{{ item.count }}</td>
+                                    <td>{{ item.totalQuantity }}</td>
+                                </tr>
+                                <tr v-if="topDistributedItems.length === 0">
+                                    <td colspan="4" style="text-align: center; padding: 20px;">
+                                        ยังไม่มีข้อมูลการแจกจ่าย
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- จัดการศูนย์ -->
+                    <div v-if="currentView === 'center'">
+                        <h2 class="section-title">จัดการข้อมูลศูนย์บริจาค</h2>
+
+                        <div class="success-message" v-if="message">
+                            <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+                        <div class="add-item-form">
+                            <div class="form-group">
+                                <label for="centerName">ชื่อศูนย์บริจาค</label>
+                                <input type="text" id="centerName" v-model="currentCenter.name" class="form-control"
+                                    placeholder="ชื่อศูนย์บริจาค">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="centerAddress">ที่ตั้งศูนย์</label>
+                                <input type="text" id="centerAddress" v-model="currentCenter.address"
+                                    class="form-control" placeholder="ที่ตั้งศูนย์">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="centerPhone">เบอร์โทรศัพท์</label>
+                                <input type="text" id="centerPhone" v-model="currentCenter.phone" class="form-control"
+                                    placeholder="เบอร์โทรศัพท์">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="centerDescription">รายละเอียดศูนย์</label>
+                                <textarea id="centerDescription" v-model="currentCenter.description"
+                                    class="form-control" rows="4" placeholder="รายละเอียดเกี่ยวกับศูนย์"></textarea>
+                            </div>
+
+                            <button class="btn btn-primary" @click="updateCenter">
+                                <i class="fas fa-save"></i> บันทึกข้อมูลศูนย์
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ดูแบบสาธารณะ -->
+                    <div v-if="currentView === 'public'">
+                        <div class="public-view">
+                            <h2 class="public-title">Relief Warehouse TH</h2>
+                            <p class="public-subtitle">
+                                ระบบคลังศูนย์บริจาคแบบสาธารณะ <br>
+                                ค้นหาศูนย์บริจาคและดูสถานะสินค้าในคลังแบบเรียลไทม์</p>
+
+                            <div class="center-info" v-if="currentCenter">
+                                <h3>{{ currentCenter.name }}</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> {{ currentCenter.address }}</p>
+                                <p><i class="fas fa-phone"></i> {{ currentCenter.phone }}</p>
+                                <p><i class="fas fa-info-circle"></i> {{ currentCenter.description }}</p>
+                            </div>
+
+                            <div class="public-stats">
+                                <div class="public-stat">
+                                    <h3><i class="fas fa-exclamation-circle" style="color: #f44336;"></i>
+                                        สินค้าขาดแคลนเร่งด่วน</h3>
+                                    <ul>
+                                        <li v-for="item in urgentItems" :key="item.id">
+                                            <span class="item-name">{{ item.name }}</span>
+                                            <span class="item-status status-urgent">มี {{ item.currentStock }} / ต้องการ
+                                                {{ item.targetStock }}</span>
+                                        </li>
+                                        <li v-if="urgentItems.length === 0" style="justify-content: center;">
+                                            <span>ไม่มีสินค้าที่ขาดแคลนเร่งด่วน</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="public-stat">
+                                    <h3><i class="fas fa-info-circle" style="color: #ff9800;"></i> สินค้ามีปริมาณปานกลาง
+                                    </h3>
+                                    <ul>
+                                        <li v-for="item in moderateItems" :key="item.id">
+                                            <span class="item-name">{{ item.name }}</span>
+                                            <span class="item-status status-moderate">มี {{ item.currentStock }} /
+                                                ต้องการ {{ item.targetStock }}</span>
+                                        </li>
+                                        <li v-if="moderateItems.length === 0" style="justify-content: center;">
+                                            <span>ไม่มีสินค้าที่มีปริมาณปานกลาง</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="public-stat">
+                                    <h3><i class="fas fa-check-circle" style="color: #4caf50;"></i> สินค้ามีเพียงพอ</h3>
+                                    <ul>
+                                        <li v-for="item in sufficientItems" :key="item.id">
+                                            <span class="item-name">{{ item.name }}</span>
+                                            <span class="item-status status-sufficient">มี {{ item.currentStock }} /
+                                                ต้องการ {{ item.targetStock }}</span>
+                                        </li>
+                                        <li v-if="sufficientItems.length === 0" style="justify-content: center;">
+                                            <span>ไม่มีสินค้าที่มีเพียงพอ</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- หน้าสาธารณะสำหรับผู้ใช้ทั่วไป -->
+            <div v-else class="public-view">
+                <h2 class="public-title">Relief Warehouse TH</h2>
+                <p class="public-subtitle">
+                    ระบบคลังศูนย์บริจาคแบบสาธารณะ <br>
+                    ค้นหาศูนย์บริจาคและดูสถานะสินค้าในคลังแบบเรียลไทม์</p>
+
+                <!-- กล่องค้นหาศูนย์ -->
+                <div class="search-box">
+                    <input type="text" v-model="searchQuery" placeholder="ค้นหาศูนย์บริจาคด้วยชื่อหรือเบอร์โทรศัพท์..."
+                        @input="searchCenters">
+                    <i class="fas fa-search" style="margin-left: -30px; color: #757575;"></i>
+                </div>
+
+                <div class="loading" v-if="loading && !selectedCenterId">
+                    <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลศูนย์...
+                </div>
+
+                <!-- แสดงผลศูนย์ทั้งหมดหรือผลการค้นหา -->
+                <div v-if="!selectedCenterId && !loading">
+                    <h3 class="section-title" style="text-align: center;">ศูนย์บริจาคทั้งหมด</h3>
+
+                    <div v-if="filteredCenters.length > 0" class="centers-grid">
+                        <div v-for="center in filteredCenters" :key="center.id" class="center-card"
+                            @click="selectCenter(center.id)">
+                            <h3>{{ center.name }}</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> {{ center.address }}</p>
+                            <p><i class="fas fa-phone"></i> {{ center.phone }}</p>
+                            <p><i class="fas fa-info-circle"></i> {{ center.description }}</p>
+
+                            <!-- แสดงข้อมูลการแจกจ่าย -->
+                            <div class="distribution-info"
+                                v-if="getCenterDistributionStats(center.id).totalDistributed > 0">
+                                <h4><i class="fas fa-people-carry"></i> สินค้าแจกจ่ายไปแล้ว</h4>
+                                <div class="distribution-item">
+                                    <span>ทั้งหมด:</span>
+                                    <span>{{ getCenterDistributionStats(center.id).totalDistributed }} ชิ้น</span>
+                                </div>
+                                <div class="distribution-item">
+                                    <span>จำนวนครั้ง:</span>
+                                    <span>{{ getCenterDistributionStats(center.id).distributionCount }} ครั้ง</span>
+                                </div>
+                            </div>
+                            <div class="distribution-info" v-else>
+                                <p style="color: #757575; font-style: italic;">ยังไม่มีข้อมูลการแจกจ่าย</p>
+                            </div>
+
+                            <div style="margin-top: 15px; text-align: center;">
+                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">
+                                    <i class="fas fa-eye"></i> ดูรายละเอียด
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="no-results">
+                        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <p>ไม่พบศูนย์บริจาคที่ตรงกับการค้นหา</p>
+                        <p>"{{ searchQuery }}"</p>
+                    </div>
+                </div>
+
+                <!-- แสดงรายละเอียดศูนย์ที่เลือก -->
+                <div v-if="selectedCenterId && !loading">
+                    <div class="center-info">
+                        <h3>{{ publicCenter.name }}</h3>
+                        <p><i class="fas fa-map-marker-alt"></i> {{ publicCenter.address }}</p>
+                        <p><i class="fas fa-phone"></i> {{ publicCenter.phone }}</p>
+                        <p><i class="fas fa-info-circle"></i> {{ publicCenter.description }}</p>
+
+                        <!-- แสดงข้อมูลการแจกจ่ายของศูนย์นี้ -->
+                        <div class="distribution-info"
+                            v-if="getCenterDistributionStats(selectedCenterId).totalDistributed > 0">
+                            <h4><i class="fas fa-people-carry"></i> สินค้าแจกจ่ายไปแล้ว</h4>
+                            <div class="distribution-item">
+                                <span>ทั้งหมด:</span>
+                                <span>{{ getCenterDistributionStats(selectedCenterId).totalDistributed }} ชิ้น</span>
+                            </div>
+                            <div class="distribution-item">
+                                <span>จำนวนครั้ง:</span>
+                                <span>{{ getCenterDistributionStats(selectedCenterId).distributionCount }} ครั้ง</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" @click="selectedCenterId = ''; searchQuery = '';"
+                        style="margin-bottom: 20px;">
+                        <i class="fas fa-arrow-left"></i> กลับไปหน้ารายการศูนย์
+                    </button>
+
+                    <div class="public-stats">
+                        <div class="public-stat">
+                            <h3><i class="fas fa-exclamation-circle" style="color: #f44336;"></i> สินค้าขาดแคลนเร่งด่วน
+                            </h3>
+                            <ul>
+                                <li v-for="item in publicUrgentItems" :key="item.id">
+                                    <span class="item-name">{{ item.name }}</span>
+                                    <span class="item-status status-urgent">มี {{ item.currentStock }} / ต้องการ {{
+                                        item.targetStock }}</span>
+                                </li>
+                                <li v-if="publicUrgentItems.length === 0" style="justify-content: center;">
+                                    <span>ไม่มีสินค้าที่ขาดแคลนเร่งด่วน</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="public-stat">
+                            <h3><i class="fas fa-info-circle" style="color: #ff9800;"></i> สินค้ามีปริมาณปานกลาง</h3>
+                            <ul>
+                                <li v-for="item in publicModerateItems" :key="item.id">
+                                    <span class="item-name">{{ item.name }}</span>
+                                    <span class="item-status status-moderate">มี {{ item.currentStock }} / ต้องการ {{
+                                        item.targetStock }}</span>
+                                </li>
+                                <li v-if="publicModerateItems.length === 0" style="justify-content: center;">
+                                    <span>ไม่มีสินค้าที่มีปริมาณปานกลาง</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="public-stat">
+                            <h3><i class="fas fa-check-circle" style="color: #4caf50;"></i> สินค้ามีเพียงพอ</h3>
+                            <ul>
+                                <li v-for="item in publicSufficientItems" :key="item.id">
+                                    <span class="item-name">{{ item.name }}</span>
+                                    <span class="item-status status-sufficient">มี {{ item.currentStock }} / ต้องการ {{
+                                        item.targetStock }}</span>
+                                </li>
+                                <li v-if="publicSufficientItems.length === 0" style="justify-content: center;">
+                                    <span>ไม่มีสินค้าที่มีเพียงพอ</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>ศูนย์ช่วยเหลือชุมชน | อัพเดทล่าสุด: {{ lastUpdated }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // กำหนดค่า Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDa-3q4csaprDJ0NOO-8GkUId4NuXGgstg",
+            authDomain: "donatrace-stock.firebaseapp.com",
+            databaseURL: "https://donatrace-stock-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "donatrace-stock",
+            storageBucket: "donatrace-stock.firebasestorage.app",
+            messagingSenderId: "1091187517768",
+            appId: "1:1091187517768:web:2512f6cdc86f4e3cbdab7d",
+            measurementId: "G-BQ611T0GSB"
+        };
+
+        // เริ่มต้น Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        new Vue({
+            el: '#app',
+            data: {
+                user: null,
+                currentView: 'dashboard',
+                items: [],
+                donations: [],
+                distributions: [],
+                allCenters: [],
+                allDistributions: {}, // เก็บข้อมูลการแจกจ่ายของทุกศูนย์
+                currentCenter: null,
+                publicCenter: null,
+                publicItems: [],
+                selectedCenterId: '',
+                searchQuery: '',
+                filteredCenters: [],
+                newItem: {
+                    name: '',
+                    currentStock: 0,
+                    targetStock: 0
+                },
+                newDonation: {
+                    donorName: '',
+                    donorPhone: '',
+                    itemId: '',
+                    quantity: 0,
+                    date: new Date().toISOString().split('T')[0]
+                },
+                newDistribution: {
+                    itemId: '',
+                    quantity: 0,
+                    date: new Date().toISOString().split('T')[0],
+                    recipient: '',
+                    details: ''
+                },
+                lastUpdated: new Date().toLocaleString('th-TH'),
+                loading: true,
+                message: '',
+                donationsChart: null,
+                selectedItem: null
+            },
+            computed: {
+                urgentItems() {
+                    return this.items.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio < 0.5;
+                    });
+                },
+                moderateItems() {
+                    return this.items.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio >= 0.5 && ratio < 1;
+                    });
+                },
+                sufficientItems() {
+                    return this.items.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio >= 1;
+                    });
+                },
+                publicUrgentItems() {
+                    return this.publicItems.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio < 0.5;
+                    });
+                },
+                publicModerateItems() {
+                    return this.publicItems.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio >= 0.5 && ratio < 1;
+                    });
+                },
+                publicSufficientItems() {
+                    return this.publicItems.filter(item => {
+                        const ratio = item.currentStock / item.targetStock;
+                        return ratio >= 1;
+                    });
+                },
+                totalDonations() {
+                    return this.donations.length;
+                },
+                totalDonatedItems() {
+                    return this.donations.reduce((total, donation) => total + parseInt(donation.quantity), 0);
+                },
+                totalDistributions() {
+                    return this.distributions.length;
+                },
+                totalDistributedItems() {
+                    return this.distributions.reduce((total, distribution) => total + parseInt(distribution.quantity), 0);
+                },
+                uniqueDonors() {
+                    const donors = new Set();
+                    this.donations.forEach(donation => {
+                        donors.add(donation.donorPhone);
+                    });
+                    return donors.size;
+                },
+                topDonors() {
+                    const donorMap = {};
+
+                    this.donations.forEach(donation => {
+                        const key = donation.donorPhone;
+                        if (!donorMap[key]) {
+                            donorMap[key] = {
+                                donorName: donation.donorName,
+                                donorPhone: donation.donorPhone,
+                                count: 0,
+                                totalQuantity: 0
+                            };
+                        }
+
+                        donorMap[key].count++;
+                        donorMap[key].totalQuantity += parseInt(donation.quantity);
+                    });
+
+                    return Object.values(donorMap)
+                        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+                        .slice(0, 10);
+                },
+                topDistributedItems() {
+                    const itemMap = {};
+
+                    this.distributions.forEach(distribution => {
+                        const key = distribution.itemId;
+                        if (!itemMap[key]) {
+                            itemMap[key] = {
+                                itemId: distribution.itemId,
+                                count: 0,
+                                totalQuantity: 0
+                            };
+                        }
+
+                        itemMap[key].count++;
+                        itemMap[key].totalQuantity += parseInt(distribution.quantity);
+                    });
+
+                    return Object.values(itemMap)
+                        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+                        .slice(0, 10);
+                },
+                canDistribute() {
+                    if (!this.newDistribution.itemId || !this.newDistribution.quantity || !this.newDistribution.recipient) {
+                        return false;
+                    }
+
+                    if (this.selectedItem && this.newDistribution.quantity > this.selectedItem.currentStock) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            },
+            methods: {
+                signIn() {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithPopup(provider)
+                        .then((result) => {
+                            this.user = result.user;
+                            this.loadUserCenter();
+                            this.showSuccessAlert('เข้าสู่ระบบสำเร็จ');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + error.message);
+                        });
+                },
+                signOut() {
+                    Swal.fire({
+                        title: 'ยืนยันการออกจากระบบ',
+                        text: 'คุณแน่ใจว่าต้องการออกจากระบบ?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'ออกจากระบบ',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#1e88e5',
+                        cancelButtonColor: '#757575'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            auth.signOut()
+                                .then(() => {
+                                    this.user = null;
+                                    this.currentView = 'dashboard';
+                                    this.showSuccessAlert('ออกจากระบบสำเร็จ');
+                                })
+                                .catch((error) => {
+                                    this.showErrorAlert('เกิดข้อผิดพลาดในการออกจากระบบ: ' + error.message);
+                                });
+                        }
+                    });
+                },
+                changeView(view) {
+                    this.currentView = view;
+                    this.message = '';
+
+                    if (view === 'reports') {
+                        this.$nextTick(() => {
+                            this.renderChart();
+                        });
+                    }
+                },
+                getStatusClass(item) {
+                    const ratio = item.currentStock / item.targetStock;
+                    if (ratio < 0.5) return 'status-urgent';
+                    if (ratio < 1) return 'status-moderate';
+                    return 'status-sufficient';
+                },
+                getStatusText(item) {
+                    const ratio = item.currentStock / item.targetStock;
+                    if (ratio < 0.5) return 'ขาดแคลนเร่งด่วน';
+                    if (ratio < 1) return 'มีปริมาณปานกลาง';
+                    return 'มีเพียงพอ';
+                },
+                addItem() {
+                    if (!this.newItem.name) {
+                        this.showErrorAlert('กรุณากรอกชื่อสินค้า');
+                        return;
+                    }
+
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+                    const newItemRef = database.ref(`centers/${userId}/items`).push();
+                    newItemRef.set({
+                        name: this.newItem.name,
+                        currentStock: parseInt(this.newItem.currentStock) || 0,
+                        targetStock: parseInt(this.newItem.targetStock) || 0
+                    })
+                        .then(() => {
+                            this.newItem = {
+                                name: '',
+                                currentStock: 0,
+                                targetStock: 0
+                            };
+                            this.showSuccessAlert('เพิ่มสินค้าเรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการเพิ่มสินค้า: ' + error.message);
+                        });
+                },
+                updateItem(item) {
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+                    database.ref(`centers/${userId}/items/${item.id}`).set({
+                        name: item.name,
+                        currentStock: parseInt(item.currentStock) || 0,
+                        targetStock: parseInt(item.targetStock) || 0
+                    })
+                        .then(() => {
+                            this.showSuccessAlert('อัพเดทสินค้าเรียบร้อยแล้ว');
+                            this.lastUpdated = new Date().toLocaleString('th-TH');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการอัพเดทสินค้า: ' + error.message);
+                        });
+                },
+                deleteItem(itemId) {
+                    Swal.fire({
+                        title: 'ยืนยันการลบสินค้า',
+                        text: 'คุณแน่ใจว่าต้องการลบสินค้านี้? การกระทำนี้ไม่สามารถย้อนกลับได้',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'ลบสินค้า',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#f44336',
+                        cancelButtonColor: '#757575'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (!this.user) return;
+
+                            const userId = this.user.uid;
+                            database.ref(`centers/${userId}/items/${itemId}`).remove()
+                                .then(() => {
+                                    this.showSuccessAlert('ลบสินค้าเรียบร้อยแล้ว');
+                                })
+                                .catch((error) => {
+                                    this.showErrorAlert('เกิดข้อผิดพลาดในการลบสินค้า: ' + error.message);
+                                });
+                        }
+                    });
+                },
+                addDonation() {
+                    if (!this.newDonation.donorName || !this.newDonation.donorPhone || !this.newDonation.itemId || !this.newDonation.quantity) {
+                        this.showErrorAlert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                        return;
+                    }
+
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+                    const newDonationRef = database.ref(`centers/${userId}/donations`).push();
+                    newDonationRef.set({
+                        donorName: this.newDonation.donorName,
+                        donorPhone: this.newDonation.donorPhone,
+                        itemId: this.newDonation.itemId,
+                        quantity: parseInt(this.newDonation.quantity) || 0,
+                        date: this.newDonation.date
+                    })
+                        .then(() => {
+                            // อัพเดทสต็อกสินค้า
+                            const item = this.items.find(i => i.id === this.newDonation.itemId);
+                            if (item) {
+                                item.currentStock += parseInt(this.newDonation.quantity);
+                                this.updateItem(item);
+                            }
+
+                            this.newDonation = {
+                                donorName: '',
+                                donorPhone: '',
+                                itemId: '',
+                                quantity: 0,
+                                date: new Date().toISOString().split('T')[0]
+                            };
+                            this.showSuccessAlert('บันทึกการบริจาคเรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการบันทึกการบริจาค: ' + error.message);
+                        });
+                },
+                addDistribution() {
+                    if (!this.canDistribute) {
+                        this.showErrorAlert('กรุณากรอกข้อมูลให้ครบถ้วนและตรวจสอบจำนวนสต็อก');
+                        return;
+                    }
+
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+                    const newDistributionRef = database.ref(`centers/${userId}/distributions`).push();
+                    newDistributionRef.set({
+                        itemId: this.newDistribution.itemId,
+                        quantity: parseInt(this.newDistribution.quantity) || 0,
+                        date: this.newDistribution.date,
+                        recipient: this.newDistribution.recipient,
+                        details: this.newDistribution.details
+                    })
+                        .then(() => {
+                            // อัพเดทสต็อกสินค้า
+                            const item = this.items.find(i => i.id === this.newDistribution.itemId);
+                            if (item) {
+                                item.currentStock -= parseInt(this.newDistribution.quantity);
+                                this.updateItem(item);
+                            }
+
+                            this.newDistribution = {
+                                itemId: '',
+                                quantity: 0,
+                                date: new Date().toISOString().split('T')[0],
+                                recipient: '',
+                                details: ''
+                            };
+                            this.selectedItem = null;
+                            this.showSuccessAlert('บันทึกการแจกจ่ายเรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการบันทึกการแจกจ่าย: ' + error.message);
+                        });
+                },
+                checkStock() {
+                    if (this.newDistribution.itemId) {
+                        this.selectedItem = this.items.find(i => i.id === this.newDistribution.itemId);
+                    } else {
+                        this.selectedItem = null;
+                    }
+                },
+                getItemName(itemId) {
+                    const item = this.items.find(i => i.id === itemId);
+                    return item ? item.name : 'ไม่พบข้อมูล';
+                },
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('th-TH');
+                },
+                updateCenter() {
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+                    database.ref(`centers/${userId}/info`).set(this.currentCenter)
+                        .then(() => {
+                            this.showSuccessAlert('บันทึกข้อมูลศูนย์เรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการบันทึกข้อมูลศูนย์: ' + error.message);
+                        });
+                },
+                loadUserCenter() {
+                    if (!this.user) return;
+
+                    const userId = this.user.uid;
+
+                    // โหลดข้อมูลศูนย์
+                    database.ref(`centers/${userId}/info`).on('value', (snapshot) => {
+                        const centerData = snapshot.val();
+                        if (centerData) {
+                            this.currentCenter = centerData;
+                        } else {
+                            // สร้างข้อมูลศูนย์เริ่มต้นหากไม่มี
+                            this.currentCenter = {
+                                name: 'ศูนย์บริจาคของฉัน',
+                                address: 'ยังไม่ได้กำหนด',
+                                phone: 'ยังไม่ได้กำหนด',
+                                description: 'ยังไม่ได้กำหนด'
+                            };
+                            this.updateCenter();
+                        }
+                    });
+
+                    // โหลดข้อมูลสินค้า
+                    database.ref(`centers/${userId}/items`).on('value', (snapshot) => {
+                        const itemsData = snapshot.val();
+                        this.items = [];
+
+                        if (itemsData) {
+                            Object.keys(itemsData).forEach(key => {
+                                this.items.push({
+                                    id: key,
+                                    ...itemsData[key]
+                                });
+                            });
+                        }
+
+                        this.loading = false;
+                        this.lastUpdated = new Date().toLocaleString('th-TH');
+                    });
+
+                    // โหลดข้อมูลการบริจาค
+                    database.ref(`centers/${userId}/donations`).on('value', (snapshot) => {
+                        const donationsData = snapshot.val();
+                        this.donations = [];
+
+                        if (donationsData) {
+                            Object.keys(donationsData).forEach(key => {
+                                this.donations.push({
+                                    id: key,
+                                    ...donationsData[key]
+                                });
+                            });
+                        }
+                    });
+
+                    // โหลดข้อมูลการแจกจ่าย
+                    database.ref(`centers/${userId}/distributions`).on('value', (snapshot) => {
+                        const distributionsData = snapshot.val();
+                        this.distributions = [];
+
+                        if (distributionsData) {
+                            Object.keys(distributionsData).forEach(key => {
+                                this.distributions.push({
+                                    id: key,
+                                    ...distributionsData[key]
+                                });
+                            });
+                        }
+                    });
+                },
+                loadAllCenters() {
+                    database.ref('centers').on('value', (snapshot) => {
+                        const centersData = snapshot.val();
+                        this.allCenters = [];
+                        this.allDistributions = {};
+
+                        if (centersData) {
+                            Object.keys(centersData).forEach(key => {
+                                if (centersData[key].info) {
+                                    this.allCenters.push({
+                                        id: key,
+                                        ...centersData[key].info
+                                    });
+                                }
+
+                                // โหลดข้อมูลการแจกจ่ายของศูนย์นี้
+                                if (centersData[key].distributions) {
+                                    let totalDistributed = 0;
+                                    let distributionCount = 0;
+
+                                    Object.values(centersData[key].distributions).forEach(distribution => {
+                                        totalDistributed += parseInt(distribution.quantity) || 0;
+                                        distributionCount++;
+                                    });
+
+                                    this.allDistributions[key] = {
+                                        totalDistributed,
+                                        distributionCount
+                                    };
+                                } else {
+                                    this.allDistributions[key] = {
+                                        totalDistributed: 0,
+                                        distributionCount: 0
+                                    };
+                                }
+                            });
+
+                            this.filteredCenters = this.allCenters;
+                        }
+
+                        this.loading = false;
+                    });
+                },
+                searchCenters() {
+                    if (!this.searchQuery.trim()) {
+                        this.filteredCenters = this.allCenters;
+                        return;
+                    }
+
+                    const query = this.searchQuery.toLowerCase().trim();
+                    this.filteredCenters = this.allCenters.filter(center => {
+                        return (
+                            center.name.toLowerCase().includes(query) ||
+                            center.phone.includes(query)
+                        );
+                    });
+                },
+                selectCenter(centerId) {
+                    this.selectedCenterId = centerId;
+                    this.loadPublicCenterData();
+                },
+                getCenterDistributionStats(centerId) {
+                    return this.allDistributions[centerId] || { totalDistributed: 0, distributionCount: 0 };
+                },
+                loadPublicCenterData() {
+                    if (!this.selectedCenterId) {
+                        this.publicCenter = null;
+                        this.publicItems = [];
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    // โหลดข้อมูลศูนย์
+                    database.ref(`centers/${this.selectedCenterId}/info`).once('value')
+                        .then((snapshot) => {
+                            this.publicCenter = snapshot.val();
+
+                            // โหลดข้อมูลสินค้า
+                            return database.ref(`centers/${this.selectedCenterId}/items`).once('value');
+                        })
+                        .then((snapshot) => {
+                            const itemsData = snapshot.val();
+                            this.publicItems = [];
+
+                            if (itemsData) {
+                                Object.keys(itemsData).forEach(key => {
+                                    this.publicItems.push({
+                                        id: key,
+                                        ...itemsData[key]
+                                    });
+                                });
+                            }
+
+                            this.loading = false;
+                            this.lastUpdated = new Date().toLocaleString('th-TH');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message);
+                            this.loading = false;
+                        });
+                },
+                renderChart() {
+                    if (this.donationsChart) {
+                        this.donationsChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('donationsChart').getContext('2d');
+
+                    // จัดกลุ่มข้อมูลตามเดือน
+                    const monthlyData = {};
+                    this.donations.forEach(donation => {
+                        const date = new Date(donation.date);
+                        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+
+                        if (!monthlyData[monthKey]) {
+                            monthlyData[monthKey] = 0;
+                        }
+
+                        monthlyData[monthKey] += parseInt(donation.quantity);
+                    });
+
+                    const labels = Object.keys(monthlyData).sort();
+                    const data = labels.map(label => monthlyData[label]);
+
+                    this.donationsChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'จำนวนสินค้าที่ได้รับบริจาค',
+                                data: data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'จำนวนสินค้า'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'เดือน'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+                showSuccessAlert(message) {
+                    Swal.fire({
+                        title: 'สำเร็จ!',
+                        text: message,
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#4caf50',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                },
+                showErrorAlert(message) {
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: message,
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#f44336'
+                    });
+                }
+            },
+            mounted() {
+                // ตรวจสอบสถานะการล็อกอิน
+                auth.onAuthStateChanged((user) => {
+                    this.user = user;
+                    if (user) {
+                        this.loadUserCenter();
+                    }
+                });
+
+                // โหลดข้อมูลศูนย์ทั้งหมดสำหรับหน้าสาธารณะ
+                this.loadAllCenters();
+            }
+        });
+    </script>
+
+    <script>
+        // เพิ่มเอฟเฟกต์เมื่อคลิกเมนู
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function () {
+                // ลบคลาส active จากทุกเมนู
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+
+                // เพิ่มคลาส active ให้เมนูที่ถูกคลิก
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
