@@ -631,30 +631,6 @@
             font-size: 18px;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .user-info {
-                margin-top: 15px;
-            }
-
-            .stats-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .centers-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-
         /* ========== SIDEBAR STYLES ========== */
         .sidebar {
             flex: 1;
@@ -668,6 +644,7 @@
             height: fit-content;
             max-height: calc(100vh - 140px);
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -894,9 +871,89 @@
             margin-top: 20px;
             border-left: 4px solid #1e88e5;
         }
+
+        /* ========== MOBILE SIDEBAR STYLES ========== */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-btn:hover {
+            background: #1565c0;
+            transform: scale(1.05);
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .main-content {
+                flex-direction: column;
+                margin-top: 70px;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 999;
+                border-radius: 0;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+                overflow-y: auto;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            .content {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .centers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
-
-
 </head>
 
 <body>
@@ -927,40 +984,51 @@
                             </button>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </header>
 
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" @click="toggleSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" :class="{ active: sidebarActive }" @click="toggleSidebar"></div>
+
         <div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
             <div v-if="user" class="main-content" style="display: flex; gap: 30px;">
-                <div class="sidebar">
+                <div class="sidebar" :class="{ active: sidebarActive }">
                     <div class="nav-item" :class="{ active: currentView === 'dashboard' }"
-                        @click="changeView('dashboard')">
+                        @click="changeView('dashboard'); closeSidebar();">
                         <i class="fas fa-tachometer-alt"></i> ภาพรวมคลัง
                     </div>
-                    <div class="nav-item" :class="{ active: currentView === 'manage' }" @click="changeView('manage')">
+                    <div class="nav-item" :class="{ active: currentView === 'manage' }" 
+                         @click="changeView('manage'); closeSidebar();">
                         <i class="fas fa-boxes"></i> จัดการสินค้า
                     </div>
-                    <div class="nav-item" :class="{ active: currentView === 'add' }" @click="changeView('add')">
+                    <div class="nav-item" :class="{ active: currentView === 'add' }" 
+                         @click="changeView('add'); closeSidebar();">
                         <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
                     </div>
                     <div class="nav-item" :class="{ active: currentView === 'donations' }"
-                        @click="changeView('donations')">
+                        @click="changeView('donations'); closeSidebar();">
                         <i class="fas fa-hand-holding-heart"></i> บันทึกการบริจาค
                     </div>
                     <div class="nav-item" :class="{ active: currentView === 'distributions' }"
-                        @click="changeView('distributions')">
+                        @click="changeView('distributions'); closeSidebar();">
                         <i class="fas fa-people-carry"></i> การแจกจ่ายสินค้า
                     </div>
-                    <div class="nav-item" :class="{ active: currentView === 'reports' }" @click="changeView('reports')">
+                    <div class="nav-item" :class="{ active: currentView === 'reports' }" 
+                         @click="changeView('reports'); closeSidebar();">
                         <i class="fas fa-chart-bar"></i> รายงานและสถิติ
                     </div>
-                    <div class="nav-item" :class="{ active: currentView === 'center' }" @click="changeView('center')">
+                    <div class="nav-item" :class="{ active: currentView === 'center' }" 
+                         @click="changeView('center'); closeSidebar();">
                         <i class="fas fa-building"></i> จัดการศูนย์
                     </div>
-                    <div class="nav-item" :class="{ active: currentView === 'public' }" @click="changeView('public')">
+                    <div class="nav-item" :class="{ active: currentView === 'public' }" 
+                         @click="changeView('public'); closeSidebar();">
                         <i class="fas fa-eye"></i> ดูแบบสาธารณะ
                     </div>
                 </div>
@@ -1202,7 +1270,6 @@
                             </tbody>
                         </table>
 
-
                         <!-- ฟอร์มแก้ไขการบริจาค -->
                         <div v-if="editingDonation" class="edit-form">
                             <h3>แก้ไขการบริจาค</h3>
@@ -1250,7 +1317,6 @@
                         <div class="success-message" v-if="message">
                             <i class="fas fa-check"></i> {{ message }}
                         </div>
-
 
                         <!-- ช่องค้นหาผู้รับผิดชอบการแจกจ่าย -->
                         <div class="search-container">
@@ -1481,7 +1547,6 @@
                                     </td>
                                 </tr>
                             </tbody>
-
                         </table>
                     </div>
 
@@ -1591,7 +1656,6 @@
 
             <!-- หน้าสาธารณะสำหรับผู้ใช้ทั่วไป -->
             <div v-else class="public-view">
-
                 <h2 class="public-title">Relief Warehouse TH</h2>
                 <p id="randomText" class="text-center my-2 btn btn-light btn-sm public-subtitle"></p>
 
@@ -1647,7 +1711,6 @@
                                     <br>กรุณาติดต่อศูนย์บริจาคโดยตรงก่อนดำเนินการใดๆ
                                 </button>
                             </div>
-
                         </div>
                     </div>
 
@@ -1692,7 +1755,6 @@
                         style="margin-bottom: 20px;">
                         <i class="fas fa-arrow-left"></i> กลับไปหน้ารายการศูนย์
                     </button>
-
 
                     <div class="public-stats">
                         <div class="public-stat">
@@ -1748,6 +1810,7 @@
             </div>
         </div>
     </div>
+
     <script>
         // ตรวจสอบก่อนว่ามี element อยู่ไหม ป้องกัน error
         const yearEl = document.getElementById('currentYear');
@@ -1755,6 +1818,7 @@
             yearEl.textContent = new Date().getFullYear();
         }
     </script>
+    
     <script>
         // กำหนดค่า Firebase
         const firebaseConfig = {
@@ -1780,6 +1844,7 @@
                 user: null,
                 currentView: 'dashboard',
                 items: [],
+                sidebarActive: false, // สำหรับควบคุมการแสดง/ซ่อน sidebar บนมือถือ
 
                 donations: [],
                 distributions: [],
@@ -1977,6 +2042,14 @@
                                 });
                         }
                     });
+                },
+                toggleSidebar() {
+                    this.sidebarActive = !this.sidebarActive;
+                },
+                closeSidebar() {
+                    if (window.innerWidth <= 768) {
+                        this.sidebarActive = false;
+                    }
                 },
                 changeView(view) {
                     this.currentView = view;
@@ -2697,7 +2770,6 @@
                     this.showSuccessAlert('ส่งออกข้อมูลเป็น Excel เรียบร้อยแล้ว');
                 },
 
-
                 printReport() {
                     window.print();
                 }
@@ -2738,10 +2810,10 @@
                     },
                     deep: true
                 }
-
             }
         });
     </script>
+    
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -2798,7 +2870,5 @@
             typeText(originalText);
         });
     </script>
-
 </body>
-
 </html>
