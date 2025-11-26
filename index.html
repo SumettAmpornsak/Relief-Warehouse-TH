@@ -14,6 +14,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -404,9 +411,65 @@
         .footer {
             text-align: center;
             margin-top: 50px;
-            padding: 20px;
-            color: #757575;
+            padding: 20px 30px;
+            font-family: 'Kanit', sans-serif;
             font-size: 14px;
+            color: #000000;
+            background: rgba(8, 0, 255, 0.268);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, #fc1119, #ff6b42, #307fff, #43c4ff);
+            animation: gradientMove 1s linear infinite;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                transform: rotate(0deg) translate(0, 0);
+            }
+
+            100% {
+                transform: rotate(0deg) translate(0, 0);
+            }
+        }
+
+        .footer p,
+        .footer small {
+            position: relative;
+            z-index: 1;
+            margin: 0.25rem 0;
+        }
+
+        .footer small {
+            font-size: 14px;
+            color: #000000;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .footer {
+                background: rgba(30, 30, 30, 0.4);
+                color: #ffffff;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+
+            .footer small {
+                color: #ffffff;
+            }
         }
 
         .loading {
@@ -762,7 +825,78 @@
                 height: 36px;
             }
         }
+
+        /* เพิ่มสไตล์สำหรับปุ่ม Export */
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-btn.excel {
+            background-color: #217346;
+            color: white;
+        }
+
+        .export-btn.print {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* สไตล์สำหรับช่องค้นหา */
+        .search-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-btn {
+            padding: 10px 15px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* สไตล์สำหรับฟอร์มแก้ไข */
+        .edit-form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #1e88e5;
+        }
     </style>
+
+
 </head>
 
 <body>
@@ -775,21 +909,26 @@
                         <h1>Relief Warehouse TH <br>
                             ระบบคลังศูนย์บริจาค</h1>
                     </div>
-                    <div class="user-info">
-                        <div v-if="user">
-                            <img :src="user.photoURL" :alt="user.displayName">
+                    <div class="user-info d-flex align-items-center gap-2">
+                        <div v-if="user" class="d-flex align-items-center gap-2">
+                            <img :src="user.photoURL" :alt="user.displayName" class="rounded-circle" width="40"
+                                height="40">
                             <span>{{ user.displayName }}</span>
-                            <button class="login-btn" @click="signOut">
+                            <button class="login-btn btn btn-outline-danger" @click="signOut">
                                 <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
                             </button>
                         </div>
-                        <button v-else class="login-btn" @click="signIn">
-                            <i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google
-                        </button>
-                        <button v-else class="login-btn">
-                            <i class="fab fa-tel"></i> ติดต่อ
-                        </button>
+                        <div v-else class="d-flex align-items-center gap-2">
+                            <button class="login-btn btn btn-outline-success" @click="signIn">
+                                <i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google
+                            </button>
+                            <button class="login-btn btn btn-outline-primary" @click="openAdminContact">
+                                <i class="fas fa-home"></i> ติดต่อผู้ดูแล
+                            </button>
+                        </div>
                     </div>
+
+
                 </div>
             </div>
         </header>
@@ -976,6 +1115,18 @@
                             <i class="fas fa-check"></i> {{ message }}
                         </div>
 
+                        <!-- ช่องค้นหาผู้บริจาคเก่า -->
+                        <div class="search-container">
+                            <input type="text" class="search-input" v-model="donationSearchQuery"
+                                placeholder="ค้นหาผู้บริจาคเก่าจากชื่อหรือเบอร์โทรศัพท์...">
+                            <button class="search-btn" @click="searchDonations">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                            <button class="btn btn-primary" @click="clearDonationSearch">
+                                <i class="fas fa-undo"></i> ล้าง
+                            </button>
+                        </div>
+
                         <div class="donation-form">
                             <h3>บันทึกการบริจาคใหม่</h3>
                             <div class="form-group">
@@ -1024,23 +1175,72 @@
                                     <th>เบอร์โทร</th>
                                     <th>สินค้า</th>
                                     <th>จำนวน</th>
+                                    <th>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="donation in donations" :key="donation.id">
+                                <tr v-for="donation in filteredDonations" :key="donation.id">
                                     <td>{{ formatDate(donation.date) }}</td>
                                     <td>{{ donation.donorName }}</td>
                                     <td>{{ donation.donorPhone }}</td>
                                     <td>{{ getItemName(donation.itemId) }}</td>
                                     <td>{{ donation.quantity }}</td>
+                                    <td>
+                                        <button class="action-btn" @click="editDonation(donation)" title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" @click="deleteDonation(donation.id)" title="ลบ">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                                <tr v-if="donations.length === 0">
-                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                <tr v-if="filteredDonations.length === 0">
+                                    <td colspan="6" style="text-align: center; padding: 20px;">
                                         ยังไม่มีประวัติการบริจาค
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+
+
+                        <!-- ฟอร์มแก้ไขการบริจาค -->
+                        <div v-if="editingDonation" class="edit-form">
+                            <h3>แก้ไขการบริจาค</h3>
+                            <div class="form-group">
+                                <label for="editDonorName">ชื่อผู้บริจาค</label>
+                                <input type="text" id="editDonorName" v-model="editingDonation.donorName"
+                                    class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDonorPhone">เบอร์โทรศัพท์</label>
+                                <input type="text" id="editDonorPhone" v-model="editingDonation.donorPhone"
+                                    class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDonationItem">สินค้าที่บริจาค</label>
+                                <select id="editDonationItem" v-model="editingDonation.itemId" class="form-control">
+                                    <option value="">เลือกสินค้า</option>
+                                    <option v-for="item in items" :key="item.id" :value="item.id">{{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editDonationQuantity">จำนวน</label>
+                                <input type="number" id="editDonationQuantity" v-model="editingDonation.quantity"
+                                    class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDonationDate">วันที่บริจาค</label>
+                                <input type="date" id="editDonationDate" v-model="editingDonation.date"
+                                    class="form-control">
+                            </div>
+                            <button class="btn btn-primary" @click="updateDonation">
+                                <i class="fas fa-save"></i> บันทึกการแก้ไข
+                            </button>
+                            <button class="btn btn-secondary" @click="cancelEditDonation" style="margin-left: 10px;">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </button>
+                        </div>
                     </div>
 
                     <!-- การแจกจ่ายสินค้า -->
@@ -1049,6 +1249,19 @@
 
                         <div class="success-message" v-if="message">
                             <i class="fas fa-check"></i> {{ message }}
+                        </div>
+
+
+                        <!-- ช่องค้นหาผู้รับผิดชอบการแจกจ่าย -->
+                        <div class="search-container">
+                            <input type="text" class="search-input" v-model="distributionSearchQuery"
+                                placeholder="ค้นหาผู้รับผิดชอบการแจกจ่าย...">
+                            <button class="search-btn" @click="searchDistributions">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                            <button class="btn btn-primary" @click="clearDistributionSearch">
+                                <i class="fas fa-undo"></i> ล้าง
+                            </button>
                         </div>
 
                         <div class="distribution-form">
@@ -1107,28 +1320,89 @@
                                     <th>จำนวน</th>
                                     <th>ผู้รับผิดชอบ</th>
                                     <th>รายละเอียด</th>
+                                    <th>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="distribution in distributions" :key="distribution.id">
+                                <tr v-for="distribution in filteredDistributions" :key="distribution.id">
                                     <td>{{ formatDate(distribution.date) }}</td>
                                     <td>{{ getItemName(distribution.itemId) }}</td>
                                     <td>{{ distribution.quantity }}</td>
                                     <td>{{ distribution.recipient }}</td>
                                     <td>{{ distribution.details }}</td>
+                                    <td>
+                                        <button class="action-btn" @click="editDistribution(distribution)"
+                                            title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" @click="deleteDistribution(distribution.id)"
+                                            title="ลบ">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                                <tr v-if="distributions.length === 0">
-                                    <td colspan="5" style="text-align: center; padding: 20px;">
+                                <tr v-if="filteredDistributions.length === 0">
+                                    <td colspan="6" style="text-align: center; padding: 20px;">
                                         ยังไม่มีประวัติการแจกจ่าย
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- ฟอร์มแก้ไขการแจกจ่าย -->
+                        <div v-if="editingDistribution" class="edit-form">
+                            <h3>แก้ไขการแจกจ่าย</h3>
+                            <div class="form-group">
+                                <label for="editDistributionItem">สินค้าที่แจกจ่าย</label>
+                                <select id="editDistributionItem" v-model="editingDistribution.itemId"
+                                    class="form-control">
+                                    <option value="">เลือกสินค้า</option>
+                                    <option v-for="item in items" :key="item.id" :value="item.id">{{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editDistributionQuantity">จำนวนที่แจกจ่าย</label>
+                                <input type="number" id="editDistributionQuantity"
+                                    v-model="editingDistribution.quantity" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDistributionDate">วันที่แจกจ่าย</label>
+                                <input type="date" id="editDistributionDate" v-model="editingDistribution.date"
+                                    class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDistributionRecipient">ผู้รับผิดชอบการแจกจ่าย</label>
+                                <input type="text" id="editDistributionRecipient"
+                                    v-model="editingDistribution.recipient" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDistributionDetails">รายละเอียดเพิ่มเติม</label>
+                                <textarea id="editDistributionDetails" v-model="editingDistribution.details"
+                                    class="form-control" rows="3"></textarea>
+                            </div>
+                            <button class="btn btn-primary" @click="updateDistribution">
+                                <i class="fas fa-save"></i> บันทึกการแก้ไข
+                            </button>
+                            <button class="btn btn-secondary" @click="cancelEditDistribution"
+                                style="margin-left: 10px;">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </button>
+                        </div>
                     </div>
 
                     <!-- รายงานและสถิติ -->
                     <div v-if="currentView === 'reports'">
                         <h2 class="section-title">รายงานและสถิติ</h2>
+
+                        <!-- ปุ่ม Export ข้อมูล -->
+                        <div class="export-buttons">
+                            <button class="export-btn excel" @click="exportToExcel">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </button>
+                            <button class="export-btn print" @click="printReport">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
 
                         <div class="stats-cards">
                             <div class="stat-card">
@@ -1207,6 +1481,7 @@
                                     </td>
                                 </tr>
                             </tbody>
+
                         </table>
                     </div>
 
@@ -1316,10 +1591,9 @@
 
             <!-- หน้าสาธารณะสำหรับผู้ใช้ทั่วไป -->
             <div v-else class="public-view">
+
                 <h2 class="public-title">Relief Warehouse TH</h2>
-                <p class="public-subtitle">
-                    ระบบคลังศูนย์บริจาคแบบสาธารณะ <br>
-                    ค้นหาศูนย์บริจาคและดูสถานะสินค้าในคลังแบบเรียลไทม์</p>
+                <p id="randomText" class="text-center my-2 btn btn-light btn-sm public-subtitle"></p>
 
                 <!-- กล่องค้นหาศูนย์ -->
                 <div class="search-box">
@@ -1334,7 +1608,7 @@
 
                 <!-- แสดงผลศูนย์ทั้งหมดหรือผลการค้นหา -->
                 <div v-if="!selectedCenterId && !loading">
-                    <h3 class="section-title" style="text-align: center;">ศูนย์บริจาคทั้งหมด</h3>
+                    <h3 class="section-title" style="text-align: center; margin-top: 50px;">ศูนย์บริจาคทั้งหมด</h3>
 
                     <div v-if="filteredCenters.length > 0" class="centers-grid">
                         <div v-for="center in filteredCenters" :key="center.id" class="center-card"
@@ -1366,6 +1640,14 @@
                                     <i class="fas fa-eye"></i> ดูรายละเอียด
                                 </button>
                             </div>
+                            <div style="margin-top: 15px; text-align: center;">
+                                <button class="btn btn-outline-danger" disabled
+                                    style="padding: 8px 16px; font-size: 14px;">
+                                    <i class="fa fa-exclamation-triangle"></i> คำเตือน! เพื่อป้องกันมิจฉาฉาชีพ
+                                    <br>กรุณาติดต่อศูนย์บริจาคโดยตรงก่อนดำเนินการใดๆ
+                                </button>
+                            </div>
+
                         </div>
                     </div>
 
@@ -1381,7 +1663,8 @@
                     <div class="center-info">
                         <h3>{{ publicCenter.name }}</h3>
                         <p><i class="fas fa-map-marker-alt"></i> {{ publicCenter.address }}</p>
-                        <p><i class="fas fa-phone"></i> {{ publicCenter.phone }}</p>
+                        <p> <i class="fas fa-phone"></i> โทร : {{ publicCenter.phone }}</p>
+
                         <p><i class="fas fa-info-circle"></i> {{ publicCenter.description }}</p>
 
                         <!-- แสดงข้อมูลการแจกจ่ายของศูนย์นี้ -->
@@ -1397,12 +1680,19 @@
                                 <span>{{ getCenterDistributionStats(selectedCenterId).distributionCount }} ครั้ง</span>
                             </div>
                         </div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button class="btn btn-outline-danger" style="padding: 8px 16px; font-size: 14px;">
+                                <i class="fa fa-exclamation-triangle"></i> คำเตือน! เพื่อป้องกันมิจฉาฉาชีพ
+                                <br>กรุณาติดต่อศูนย์บริจาคโดยตรงก่อนดำเนินการใดๆ
+                            </button>
+                        </div>
                     </div>
 
                     <button class="btn btn-primary" @click="selectedCenterId = ''; searchQuery = '';"
                         style="margin-bottom: 20px;">
                         <i class="fas fa-arrow-left"></i> กลับไปหน้ารายการศูนย์
                     </button>
+
 
                     <div class="public-stats">
                         <div class="public-stat">
@@ -1451,12 +1741,20 @@
                 </div>
 
                 <div class="footer">
-                    <p>ศูนย์ช่วยเหลือชุมชน | อัพเดทล่าสุด: {{ lastUpdated }}</p>
+                    <p>Relief Warehouse TH
+                        ระบบคลังศูนย์บริจาค | อัพเดทล่าสุด: {{ lastUpdated }}</p>
+                    <small>© <span id="currentYear"></span> Sumett Ampornsak. All rights reserved. | Version 4.0</small>
                 </div>
             </div>
         </div>
     </div>
-
+    <script>
+        // ตรวจสอบก่อนว่ามี element อยู่ไหม ป้องกัน error
+        const yearEl = document.getElementById('currentYear');
+        if (yearEl) {
+            yearEl.textContent = new Date().getFullYear();
+        }
+    </script>
     <script>
         // กำหนดค่า Firebase
         const firebaseConfig = {
@@ -1482,6 +1780,7 @@
                 user: null,
                 currentView: 'dashboard',
                 items: [],
+
                 donations: [],
                 distributions: [],
                 allCenters: [],
@@ -1492,6 +1791,17 @@
                 selectedCenterId: '',
                 searchQuery: '',
                 filteredCenters: [],
+
+                // ข้อมูลสำหรับการค้นหาและการจัดการ
+                donationSearchQuery: '',
+                distributionSearchQuery: '',
+                filteredDonations: [],
+                filteredDistributions: [],
+                editingDonation: null,
+                editingDistribution: null,
+                originalDonationStock: 0,
+                originalDistributionStock: 0,
+
                 newItem: {
                     name: '',
                     currentStock: 0,
@@ -1629,6 +1939,9 @@
                 }
             },
             methods: {
+                openAdminContact() {
+                    window.open("https://sumettampornsak.vercel.app/", "_blank");
+                },
                 signIn() {
                     const provider = new firebase.auth.GoogleAuthProvider();
                     auth.signInWithPopup(provider)
@@ -2107,8 +2420,289 @@
                         confirmButtonText: 'ตกลง',
                         confirmButtonColor: '#f44336'
                     });
+                },
+                // ฟังก์ชันสำหรับหน้าบันทึกการบริจาค
+                searchDonations() {
+                    if (!this.donationSearchQuery.trim()) {
+                        this.filteredDonations = this.donations;
+                        return;
+                    }
+
+                    const query = this.donationSearchQuery.toLowerCase().trim();
+                    this.filteredDonations = this.donations.filter(donation => {
+                        return (
+                            donation.donorName.toLowerCase().includes(query) ||
+                            donation.donorPhone.includes(query)
+                        );
+                    });
+                },
+
+                clearDonationSearch() {
+                    this.donationSearchQuery = '';
+                    this.filteredDonations = this.donations;
+                },
+
+                editDonation(donation) {
+                    this.editingDonation = { ...donation };
+                    // บันทึกจำนวนสต็อกเดิมเพื่อใช้ในการคำนวณเมื่อแก้ไข
+                    const item = this.items.find(i => i.id === donation.itemId);
+                    if (item) {
+                        this.originalDonationStock = item.currentStock;
+                    }
+                },
+
+                updateDonation() {
+                    if (!this.user || !this.editingDonation) return;
+
+                    const userId = this.user.uid;
+
+                    // คำนวณผลต่างของจำนวนบริจาค
+                    const originalDonation = this.donations.find(d => d.id === this.editingDonation.id);
+                    const quantityDiff = parseInt(this.editingDonation.quantity) - parseInt(originalDonation.quantity);
+
+                    // อัพเดทข้อมูลการบริจาค
+                    database.ref(`centers/${userId}/donations/${this.editingDonation.id}`).update({
+                        donorName: this.editingDonation.donorName,
+                        donorPhone: this.editingDonation.donorPhone,
+                        itemId: this.editingDonation.itemId,
+                        quantity: parseInt(this.editingDonation.quantity),
+                        date: this.editingDonation.date
+                    })
+                        .then(() => {
+                            // อัพเดทสต็อกสินค้า
+                            const item = this.items.find(i => i.id === this.editingDonation.itemId);
+                            if (item) {
+                                item.currentStock += quantityDiff;
+                                this.updateItem(item);
+                            }
+
+                            this.editingDonation = null;
+                            this.showSuccessAlert('อัพเดทการบริจาคเรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการอัพเดทการบริจาค: ' + error.message);
+                        });
+                },
+
+                cancelEditDonation() {
+                    this.editingDonation = null;
+                },
+
+                deleteDonation(donationId) {
+                    Swal.fire({
+                        title: 'ยืนยันการลบการบริจาค',
+                        text: 'คุณแน่ใจว่าต้องการลบรายการบริจาคนี้?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'ลบ',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#f44336',
+                        cancelButtonColor: '#757575'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (!this.user) return;
+
+                            const userId = this.user.uid;
+                            const donation = this.donations.find(d => d.id === donationId);
+
+                            // ลดสต็อกสินค้าก่อนลบ
+                            if (donation) {
+                                const item = this.items.find(i => i.id === donation.itemId);
+                                if (item) {
+                                    item.currentStock -= parseInt(donation.quantity);
+                                    this.updateItem(item);
+                                }
+                            }
+
+                            database.ref(`centers/${userId}/donations/${donationId}`).remove()
+                                .then(() => {
+                                    this.showSuccessAlert('ลบการบริจาคเรียบร้อยแล้ว');
+                                })
+                                .catch((error) => {
+                                    this.showErrorAlert('เกิดข้อผิดพลาดในการลบการบริจาค: ' + error.message);
+                                });
+                        }
+                    });
+                },
+
+                // ฟังก์ชันสำหรับหน้าการแจกจ่ายสินค้า
+                searchDistributions() {
+                    if (!this.distributionSearchQuery.trim()) {
+                        this.filteredDistributions = this.distributions;
+                        return;
+                    }
+
+                    const query = this.distributionSearchQuery.toLowerCase().trim();
+                    this.filteredDistributions = this.distributions.filter(distribution => {
+                        return distribution.recipient.toLowerCase().includes(query);
+                    });
+                },
+
+                clearDistributionSearch() {
+                    this.distributionSearchQuery = '';
+                    this.filteredDistributions = this.distributions;
+                },
+
+                editDistribution(distribution) {
+                    this.editingDistribution = { ...distribution };
+                    // บันทึกจำนวนสต็อกเดิมเพื่อใช้ในการคำนวณเมื่อแก้ไข
+                    const item = this.items.find(i => i.id === distribution.itemId);
+                    if (item) {
+                        this.originalDistributionStock = item.currentStock;
+                    }
+                },
+
+                updateDistribution() {
+                    if (!this.user || !this.editingDistribution) return;
+
+                    const userId = this.user.uid;
+
+                    // คำนวณผลต่างของจำนวนแจกจ่าย
+                    const originalDistribution = this.distributions.find(d => d.id === this.editingDistribution.id);
+                    const quantityDiff = parseInt(originalDistribution.quantity) - parseInt(this.editingDistribution.quantity);
+
+                    // อัพเดทข้อมูลการแจกจ่าย
+                    database.ref(`centers/${userId}/distributions/${this.editingDistribution.id}`).update({
+                        itemId: this.editingDistribution.itemId,
+                        quantity: parseInt(this.editingDistribution.quantity),
+                        date: this.editingDistribution.date,
+                        recipient: this.editingDistribution.recipient,
+                        details: this.editingDistribution.details
+                    })
+                        .then(() => {
+                            // อัพเดทสต็อกสินค้า
+                            const item = this.items.find(i => i.id === this.editingDistribution.itemId);
+                            if (item) {
+                                item.currentStock += quantityDiff;
+                                this.updateItem(item);
+                            }
+
+                            this.editingDistribution = null;
+                            this.showSuccessAlert('อัพเดทการแจกจ่ายเรียบร้อยแล้ว');
+                        })
+                        .catch((error) => {
+                            this.showErrorAlert('เกิดข้อผิดพลาดในการอัพเดทการแจกจ่าย: ' + error.message);
+                        });
+                },
+
+                cancelEditDistribution() {
+                    this.editingDistribution = null;
+                },
+
+                deleteDistribution(distributionId) {
+                    Swal.fire({
+                        title: 'ยืนยันการลบการแจกจ่าย',
+                        text: 'คุณแน่ใจว่าต้องการลบรายการแจกจ่ายนี้?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'ลบ',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#f44336',
+                        cancelButtonColor: '#757575'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (!this.user) return;
+
+                            const userId = this.user.uid;
+                            const distribution = this.distributions.find(d => d.id === distributionId);
+
+                            // เพิ่มสต็อกสินค้าก่อนลบ
+                            if (distribution) {
+                                const item = this.items.find(i => i.id === distribution.itemId);
+                                if (item) {
+                                    item.currentStock += parseInt(distribution.quantity);
+                                    this.updateItem(item);
+                                }
+                            }
+
+                            database.ref(`centers/${userId}/distributions/${distributionId}`).remove()
+                                .then(() => {
+                                    this.showSuccessAlert('ลบการแจกจ่ายเรียบร้อยแล้ว');
+                                })
+                                .catch((error) => {
+                                    this.showErrorAlert('เกิดข้อผิดพลาดในการลบการแจกจ่าย: ' + error.message);
+                                });
+                        }
+                    });
+                },
+
+                // ฟังก์ชันสำหรับ Export ข้อมูลเป็น 3 Sheet
+                exportToExcel() {
+                    const todayTH = new Date().toLocaleDateString('th-TH');
+                    const dateFile = new Date().toISOString().split('T')[0];
+
+                    // ---------------- Sheet 1: สินค้าในคลัง ----------------
+                    const sheetItems = [
+                        ['รายงานคลังศูนย์บริจาค', this.currentCenter?.name || ''],
+                        ['วันที่ออกรายงาน', todayTH],
+                        [],
+                        ['สินค้าในคลัง'],
+                        ['ชื่อสินค้า', 'จำนวนที่มี', 'จำนวนที่ต้องการ', 'สถานะ']
+                    ];
+
+                    this.items.forEach(item => {
+                        sheetItems.push([
+                            item.name,
+                            item.currentStock,
+                            item.targetStock,
+                            this.getStatusText(item)
+                        ]);
+                    });
+
+                    // ---------------- Sheet 2: ประวัติการบริจาค ----------------
+                    const sheetDonations = [
+                        ['ประวัติการบริจาค', this.currentCenter?.name || ''],
+                        ['วันที่ออกรายงาน', todayTH],
+                        [],
+                        ['วันที่', 'ผู้บริจาค', 'เบอร์โทร', 'สินค้า', 'จำนวน']
+                    ];
+
+                    this.donations.forEach(donation => {
+                        sheetDonations.push([
+                            this.formatDate(donation.date),
+                            donation.donorName,
+                            donation.donorPhone,
+                            this.getItemName(donation.itemId),
+                            donation.quantity
+                        ]);
+                    });
+
+                    // ---------------- Sheet 3: ประวัติการแจกจ่าย ----------------
+                    const sheetDistributions = [
+                        ['ประวัติการแจกจ่าย', this.currentCenter?.name || ''],
+                        ['วันที่ออกรายงาน', todayTH],
+                        [],
+                        ['วันที่', 'สินค้า', 'จำนวน', 'ผู้รับผิดชอบ', 'รายละเอียด']
+                    ];
+
+                    this.distributions.forEach(distribution => {
+                        sheetDistributions.push([
+                            this.formatDate(distribution.date),
+                            this.getItemName(distribution.itemId),
+                            distribution.quantity,
+                            distribution.recipient,
+                            distribution.details
+                        ]);
+                    });
+
+                    // ---------------- ทำ Workbook ----------------
+                    const wb = XLSX.utils.book_new();
+
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetItems), "สินค้าในคลัง");
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetDonations), "ประวัติบริจาค");
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetDistributions), "ประวัติแจกจ่าย");
+
+                    // ---------------- ส่งออกไฟล์ ----------------
+                    XLSX.writeFile(wb, `รายงานคลังบริจาค_${dateFile}.xlsx`);
+                    this.showSuccessAlert('ส่งออกข้อมูลเป็น Excel เรียบร้อยแล้ว');
+                },
+
+
+                printReport() {
+                    window.print();
                 }
             },
+
             mounted() {
                 // ตรวจสอบสถานะการล็อกอิน
                 auth.onAuthStateChanged((user) => {
@@ -2120,10 +2714,36 @@
 
                 // โหลดข้อมูลศูนย์ทั้งหมดสำหรับหน้าสาธารณะ
                 this.loadAllCenters();
+                // กำหนดค่าเริ่มต้นสำหรับรายการที่กรองแล้ว
+                this.filteredDonations = this.donations;
+                this.filteredDistributions = this.distributions;
+            },
+            watch: {
+                // ดูการเปลี่ยนแปลงของ donations และ distributions เพื่ออัพเดท filtered data
+                donations: {
+                    handler(newVal) {
+                        this.filteredDonations = newVal;
+                        if (this.donationSearchQuery) {
+                            this.searchDonations();
+                        }
+                    },
+                    deep: true
+                },
+                distributions: {
+                    handler(newVal) {
+                        this.filteredDistributions = newVal;
+                        if (this.distributionSearchQuery) {
+                            this.searchDistributions();
+                        }
+                    },
+                    deep: true
+                }
+
             }
         });
     </script>
-
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // เพิ่มเอฟเฟกต์เมื่อคลิกเมนู
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -2137,7 +2757,48 @@
                 this.classList.add('active');
             });
         });
+
+        $(document).ready(function () {
+            const originalText = "สวัสดีครับ ยินดีต้อนรับสู่ Relief Warehouse TH ระบบคลังศูนย์บริจาคแบบสาธารณะ ค้นหาศูนย์บริจาคและดูสถานะสินค้าในคลังแบบเรียลไทม์";
+
+            function typeText(text) {
+                let index = 0;
+                const speed = 50;
+                const interval = setInterval(() => {
+                    if (index < text.length) {
+                        $("#randomText").text(text.substring(0, index + 1));
+                        index++;
+                    } else {
+                        clearInterval(interval);
+                        setTimeout(() => randomTyping(), 2000);
+                    }
+                }, speed);
+            }
+
+            function randomTyping() {
+                const characters =
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                let randomText = "...";
+                let randomIndex = 0;
+                const typingSpeed = 100;
+                const interval = setInterval(() => {
+                    if (randomIndex < 20) {
+                        randomText += characters.charAt(
+                            Math.floor(Math.random() * characters.length)
+                        );
+                        $("#randomText").text(randomText);
+                        randomIndex++;
+                    } else {
+                        clearInterval(interval);
+                        setTimeout(() => typeText(originalText), 0);
+                    }
+                }, typingSpeed);
+            }
+
+            typeText(originalText);
+        });
     </script>
+
 </body>
 
 </html>
